@@ -8,12 +8,11 @@ import java.util.Random;
 /**
  * File: Main.java Author: Miguel Menjivar Class: CS 4310 - Operating Systems
  * 
- * Assignment: Program 02 Date last modified: 3/15/2019
+ * Assignment: Program 02 Date last modified: 3/23/2019
  * 
  * Purpose: Writing a multi-threaded program Gender-segregated restroom that
  * only allows women in the restroom and no men and allows men into the restroom
  * but no women can enter
- *
  */
 class restroom implements Runnable {
 
@@ -23,6 +22,9 @@ class restroom implements Runnable {
 					// sequentially)
 	private int gender; // 0 for men || 1 for women
 	private int time; // amount of time person will stay in restroom
+
+	final int MAX_COUNT = 2; // max amount people that can enter when opposite gender is waiting
+	int count; // will increment to make sure people of opposite sex are not waiting to get in
 
 	int depart; // keeps track of the order in which people leave the restroom
 
@@ -130,7 +132,6 @@ class restroom implements Runnable {
 		System.out.println("Female line: " + femaleLine);
 		///////////////////////
 
-		// for testing purposes 1 thread
 		addId(); // add number to person
 		onePerson(getId(), getGender(), MAX_TIME); // go through restroom process
 	}
@@ -142,15 +143,19 @@ class restroom implements Runnable {
 	 * 
 	 * then will be added to their designated lines (queue) SYNCRHRONIZED
 	 */
+
+	// remove tests and add randGender to make sure they all get generated randomly
 	public void createPerson() {
 		int randGender;
 		randGender = rand.nextInt(2); // generates 0 or 1
-//		setGender(randGender); // OG
-		setGender(1); // testing purposes
+		setGender(randGender); // OG
+//		setGender(1); // testing purposes
 		// for testing purposes randGender OG
-//		addToGenderLine(randGender); // OG
-		addToGenderLine(1); // testing purposes
+		addToGenderLine(randGender); // OG
+//		addToGenderLine(1); // testing purposes
 	}
+
+	// Gender line block ======================================
 
 	/**
 	 * adds random person (male || female) to their respective lines (queues)
@@ -177,11 +182,24 @@ class restroom implements Runnable {
 	}
 
 	/**
+	 * Checks if line from M || F is empty
+	 * 
+	 * @param line => maleLine || femaleLine
+	 * @return true if line is empty
+	 */
+	public boolean isGenderLineEmpty(Queue<Integer> line) {
+		return line.isEmpty();
+	}
+	// ======================================================
+
+	// restroom BLOCK ========================
+
+	/**
 	 * will check restroom which gender is inside of it
 	 * 
 	 * @return
 	 */
-	public int getGenderRestroom() {
+	public int checkGenderRestroom() {
 		return restroom.get(0);
 	}
 
@@ -221,7 +239,17 @@ class restroom implements Runnable {
 		return restroom.size() - 1;
 	}
 
+	// =============================================
+
 	/**
+	 * will simulate the restroom
+	 * 
+	 * arrive() checks if OK to enter restroom checks if only men || women in
+	 * restroom checks to make sure restroom limit not exceed 3
+	 * 
+	 * useFacilities() delays use of restroom to 5 seconds
+	 * 
+	 * depart() releases person from restroom
 	 * 
 	 * @param id     = the ID of the person
 	 * @param gender 0 for men and 1 for women
@@ -242,6 +270,9 @@ class restroom implements Runnable {
 	 * @param id
 	 * @param gender
 	 */
+
+	// CHECKS
+	// checks if restroom empty, then adds gender into restroom
 	public synchronized void arrive(int id, int gender) {
 
 		// when the restroom is empty, allow person to enter
@@ -260,34 +291,34 @@ class restroom implements Runnable {
 			if (sizeRestroom() == MAX_RESTROOM) {
 				try {
 					wait();
-					System.out.println("WAITING WAITING WAITING WAITING WAITINT");
-					// add to restroom from here instead of calling function again
+					System.out.println("WAITING WAITING WAITING WAITING WAITINT"); // delete after
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				arrive(id, gender);
 			} else {
-//			if (sizeRestroom() <= MAX_RESTROOM) { // check if max capacity in restroom has been met
 				// check if male or female in restroom
-				if (getGenderRestroom() == GENDER_MALE) { // male check
-					removeGenderLine(maleLine);
-					enterRestroom(gender);
-				} else if (getGenderRestroom() == GENDER_FEMALE) { // female check
-					removeGenderLine(femaleLine);
-					enterRestroom(gender);
+				if (checkGenderRestroom() == GENDER_MALE) { // check if males only in restroom
+					if (isGenderLineEmpty(maleLine)) { // checks if male line is empty
+						// testing
+						enterRestroom(gender);
+						removeGenderLine(femaleLine);
+					} else { // if line is not empty
+						removeGenderLine(maleLine);
+						enterRestroom(gender);
+					}
+				} else if (checkGenderRestroom() == GENDER_FEMALE) { // check female only in restroom
+					if (isGenderLineEmpty(femaleLine)) { // checks if female line is empty
+//						// testing
+						enterRestroom(gender);
+						removeGenderLine(maleLine);
+					} else {
+						removeGenderLine(femaleLine);
+						enterRestroom(gender);
+					}
 				}
 			}
-//			}
-//		} else if(sizeRestroom() == MAX_RESTROOM) {
-//			try {
-//				wait();
-//				System.out.println("Person is waiting" );
-//			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			arrive(id, gender);
 		}
 
 		// TEST check if person made it into restroom
@@ -410,38 +441,64 @@ public class Main {
 
 		Runnable room = new restroom(); // creates restroom object
 
-//		Thread t3 = new Thread(new restroom());
-//		Thread t4 = new Thread(new restroom());
-//		t3.start();
-//		t4.start();
+		// Schedule #1
+		System.out.println("Schedule #1");
+		Thread thread[] = new Thread[5];
+		for (int j = 0; j < 4; j++) {
+			for (int i = 0; i < thread.length; i++) {
+				thread[i] = new Thread(room);
+				thread[i].start();
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 
-		// successfully creates 2 threads and puts them in same wait period
-		Thread t1 = new Thread(room);
-		t1.start();
-		try {
-			Thread.sleep(1);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		// schedule #2
+		Runnable room2 = new restroom();
+		System.out.println("\nSchedule #2");
+		Thread thread2[] = new Thread[10];
+		for (int j = 0; j < 2; j++) {
+			for (int i = 0; i < thread2.length; i++) {
+				thread2[i] = new Thread(room2);
+				thread2[i].start();
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		Thread t2 = new Thread(room);
-		t2.start();
-		try {
-			Thread.sleep(1);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		
+		// Schedule #3
+		Runnable room3 = new restroom();
+		System.out.println("\nSchedule #3");
+		Thread thread3[] = new Thread[20];
+		for(int i = 0; i < thread3.length; i++) {
+			thread3[i] = new Thread(room3);
+			thread3[i].start();
+			try {
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		Thread t3 = new Thread(room);
-		t3.start();
-		try {
-			Thread.sleep(1);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		Thread t4 = new Thread(room);
-		t4.start();
-
 	}
 }
