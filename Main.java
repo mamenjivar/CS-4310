@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Scanner;
 
 /**
  * File: Main.java Author: Miguel Menjivar Class: CS 4310 - Operating Systems
@@ -293,7 +294,6 @@ class restroom implements Runnable {
 					wait();
 					System.out.println("WAITING WAITING WAITING WAITING WAITINT"); // delete after
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				arrive(id, gender);
@@ -326,8 +326,7 @@ class restroom implements Runnable {
 		//////////////////////
 
 		// prints out message when person has arrived in restroom
-		System.out
-				.println("ARRIVED    => Person id: " + id + " ||| gender: " + showGender(gender) + "(" + gender + ")");
+		System.out.println("ARRIVED    => Person id: " + id + " ||| gender: " + showGender(gender));
 	}
 
 	/**
@@ -340,19 +339,15 @@ class restroom implements Runnable {
 	 */
 	public void useFacilities(int id, int gender, int time) {
 		// will delay the amount of time person will be in the restroom
-//		System.out.println("FACILITIES => Person id: " + id + " SLEEP");
 		try {
-//			System.out.println( Thread.currentThread());
 			Thread.sleep(time);
 
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 		// prints out message when person is using the facility
-		System.out
-				.println("FACILITIES => Person id: " + id + " ||| gender: " + showGender(gender) + "(" + gender + ")");
+		System.out.println("FACILITIES => Person id: " + id + " ||| gender: " + showGender(gender));
 	}
 
 	/**
@@ -371,10 +366,10 @@ class restroom implements Runnable {
 		leaveRestroomCount(); // increments when person is ready to leave restroom
 		exitRestroom(); // will remove person from restroom array
 
-		notify();
+		notify(); // will notify any waiting threads that need to enter restroom
 
 		// prints out departure message
-		System.out.println("DEPART     => Person id: " + id + " ||| gender: " + showGender(gender) + "(" + gender + ")"
+		System.out.println("DEPART     => Person id: " + id + " ||| gender: " + showGender(gender)
 				+ " ||| Departure Id: " + showLeaveRestroomCount());
 
 //		System.out.println("restroom depart: " + restroom);
@@ -436,68 +431,153 @@ class restroom implements Runnable {
  *
  */
 public class Main {
+	static Scanner keyboard = new Scanner(System.in);
+	static int choice;
+
 	public static void main(String[] args) {
 		System.out.println("Program 02\n");
 
-		Runnable room = new restroom(); // creates restroom object
+//		Runnable room = new restroom(); // creates restroom object
 
-		// Schedule #1
-		System.out.println("Schedule #1");
-		Thread thread[] = new Thread[5];
-		for (int j = 0; j < 4; j++) {
-			for (int i = 0; i < thread.length; i++) {
-				thread[i] = new Thread(room);
-				thread[i].start();
-				try {
-					Thread.sleep(1);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+//		// Schedule #1
+//		System.out.println("Schedule #1");
+//		Thread thread[] = new Thread[5];
+//		for (int j = 0; j < 4; j++) {
+//			for (int i = 0; i < thread.length; i++) {
+//				thread[i] = new Thread(room);
+//				thread[i].start();
+//				try {
+//					Thread.sleep(1);
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//			}
+//			try {
+//				Thread.sleep(10000);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
 
-		// schedule #2
-		Runnable room2 = new restroom();
-		System.out.println("\nSchedule #2");
-		Thread thread2[] = new Thread[10];
-		for (int j = 0; j < 2; j++) {
-			for (int i = 0; i < thread2.length; i++) {
-				thread2[i] = new Thread(room2);
-				thread2[i].start();
-				try {
-					Thread.sleep(1);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+		// think how to delay program while first schedule runs
+		// wait a bit until first program ends then start second schedule
+//		try {
+//			Thread.sleep(5000);
+//		} catch (InterruptedException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+
+//		// schedule #2
+//		Runnable room2 = new restroom();
+//		System.out.println("\nSchedule #2");
+//		Thread thread2[] = new Thread[10];
+//		for (int j = 0; j < 2; j++) {
+//			for (int i = 0; i < thread2.length; i++) {
+//				thread2[i] = new Thread(room2);
+//				thread2[i].start();
+//				try {
+//					Thread.sleep(1);
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//			}
+//			try {
+//				Thread.sleep(10000);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
+
+//		// Schedule #3
+//		Runnable room3 = new restroom();
+//		System.out.println("\nSchedule #3");
+//		Thread thread3[] = new Thread[20];
+//		for (int i = 0; i < thread3.length; i++) {
+//			thread3[i] = new Thread(room3);
+//			thread3[i].start();
+//			try {
+//				Thread.sleep(1);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
+
+		System.out.println("Which schedule would you like to run?");
+		System.out.println("1) 5 : DELAY(10) : 5 : DELAY(10) : 5 : DELAY(10) : 5");
+		System.out.println("2) 10 : DELAY(10) : 10");
+		System.out.println("3) 20");
+		System.out.println("4) Exit");
+		System.out.print(">> ");
+		choice = keyboard.nextInt();
+
+		while (true) {
+			switch (choice) {
+			case 1: // Schedule #1
+				Runnable room = new restroom();
+				System.out.println("Schedule #1");
+				Thread thread[] = new Thread[5];
+				for (int j = 0; j < 4; j++) {
+					for (int i = 0; i < thread.length; i++) {
+						thread[i] = new Thread(room);
+						thread[i].start();
+						try {
+							Thread.sleep(1);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+					try {
+						Thread.sleep(10000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
-			}
-			try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		// Schedule #3
-		Runnable room3 = new restroom();
-		System.out.println("\nSchedule #3");
-		Thread thread3[] = new Thread[20];
-		for(int i = 0; i < thread3.length; i++) {
-			thread3[i] = new Thread(room3);
-			thread3[i].start();
-			try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				break;
+			case 2:
+				// schedule #2
+				Runnable room2 = new restroom();
+				System.out.println("\nSchedule #2");
+				Thread thread2[] = new Thread[10];
+				for (int j = 0; j < 2; j++) {
+					for (int i = 0; i < thread2.length; i++) {
+						thread2[i] = new Thread(room2);
+						thread2[i].start();
+						try {
+							Thread.sleep(1);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+					try {
+						Thread.sleep(10000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				break;
+			case 3: // Schedule #3
+				Runnable room3 = new restroom();
+				System.out.println("\nSchedule #3");
+				Thread thread3[] = new Thread[20];
+				for (int i = 0; i < thread3.length; i++) {
+					thread3[i] = new Thread(room3);
+					thread3[i].start();
+					try {
+						Thread.sleep(1);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				break;
+			case 4:
+				System.exit(0);
 			}
 		}
 	}
